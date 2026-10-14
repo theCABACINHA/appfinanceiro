@@ -1,18 +1,44 @@
-# Clara · Planilha financeira pessoal
+# Clara · Controle financeiro pessoal
 
-Aplicativo simples em português para planejar o mês com salário, despesas externas e cartões de crédito.
+Aplicativo em português para planejar salário, entradas, despesas, cartões e pagamentos. Tema claro/escuro com preferência salva no navegador.
 
-## Como usar
+## Fluxo mensal
 
-1. Selecione o mês na parte superior da página.
-2. Em **Meu mês**, informe e salve seu salário líquido total.
-3. Em **Despesas**, adicione contas de luz, água, alimentação e outros gastos fora dos cartões. Você pode editar e excluir cada item.
-4. Em **Meus cartões**, informe os limites e as faturas do Nubank, PicPay e Santander. Salve cada cartão.
-5. O resumo calcula: **salário − faturas dos três cartões − despesas externas**. Se os gastos superarem o salário, mostra o valor que falta.
+1. Em **Meu mês**, informe o salário líquido total, incluindo adiantamentos. Informe também o dinheiro que já tinha no início do mês.
+2. Em **Entradas**, registre depósitos com descrição, conta, data e situação **Já recebi** ou **Vou receber**. Escolha **Dinheiro extra** para renda além do salário, ou **Salário / adiantamento** para valores que fazem parte do salário total.
+3. Em **Despesas**, cadastre luz, água, alimentação e outros gastos fora dos cartões.
+4. Em **Meus cartões**, copie do banco o limite total, crédito utilizado e limite disponível de Nubank, PicPay e Santander. Informe a fatura total do mês.
+5. Em **Pagamentos**, registre pagamentos totais ou parciais de despesas e faturas. Os registros também podem ser criados diretamente nas listas de despesas e cartões.
 
-O limite de crédito não é renda. Compras já incluídas na fatura não devem entrar novamente nas despesas externas. O indicador de limite menos fatura é uma estimativa; parcelas futuras, juros e compras pendentes podem alterar o limite real no banco. As faturas são informadas manualmente, sem conexão com bancos.
+### Cálculos
 
-Salário, faturas e despesas são separados por mês. Limites dos cartões são compartilhados entre os meses. A aplicação começa com valores zero, sem dados fictícios. As receitas e despesas da versão anterior são convertidas em salário total e despesas externas do respectivo mês; os dados originais ficam preservados no armazenamento antigo.
+- **Saldo disponível agora** = saldo inicial + entradas recebidas − pagamentos registrados. Valores previstos não entram no saldo atual.
+- **Ainda falta pagar** = despesas e faturas − pagamentos registrados.
+- **Reservar do salário** = valor em aberto menos o saldo atual positivo, com mínimo zero. Pressupõe usar o saldo atual para as contas; recebimentos futuros só reduzem a reserva quando confirmados.
+- **Salário ainda a receber** = salário total − salário/adiantamentos já recebidos.
+- **Resultado previsto do mês** = saldo inicial + salário total + extras recebidos ou previstos − despesas e faturas totais. Pagamentos e adiantamentos não são descontados ou somados duas vezes.
+
+O salário previsto não é marcado como recebido automaticamente. Para depósitos em outro mês, selecione esse mês antes de registrar. O saldo inicial de cada mês é informado manualmente; não há transferência automática de saldos entre meses. Um saldo negativo indica que faltam entradas/saldo inicial no registro ou que os pagamentos superaram o dinheiro recebido.
+
+Pagamentos não podem ultrapassar o total da conta. Despesas com pagamentos só podem ser excluídas depois de estornar os registros. O histórico permite **Estornar registro** para corrigir a planilha, sem efetuar ou desfazer transferências bancárias.
+
+## Cartões e parcelas
+
+Limite total, crédito utilizado, disponível e fatura são independentes. O app não deduz o disponível a partir da fatura nem aumenta o crédito automaticamente após um pagamento: informe os valores atualizados pelo banco. Limites e posição do crédito são compartilhados entre os meses; faturas e pagamentos pertencem ao mês selecionado.
+
+Em **Parcelas e gastos fixos por um período**, cadastre o cartão, valor mensal, primeiro mês da previsão e quantidade de meses. Se a compra já começou, use o mês da próxima parcela e quantos meses ainda faltam. As parcelas entram automaticamente na fatura prevista durante esse prazo, e param no fim.
+
+Ao digitar uma **fatura total** do banco, ela substitui a previsão para esse cartão/mês. As parcelas não são somadas novamente. Para retornar à previsão, marque **Usar parcelas previstas como fatura** e salve. A previsão automática inclui somente os itens cadastrados; outras compras devem ser incluídas no total informado.
+
+Remover uma previsão altera os meses que usavam a previsão automática. Meses com pagamentos preservam o total anterior como fatura informada. Não há ligação com bancos ou pagamento real pelo aplicativo.
+
+## Dados e migração
+
+Os dados são armazenados em centavos inteiros no `localStorage`, apenas neste navegador. Não há login ou sincronização entre dispositivos. **Baixar backup** exporta JSON; **Restaurar backup** importa versões 2 ou 3, após confirmação, preservando uma cópia interna dos registros anteriores.
+
+A versão 3 migra salário, limites, faturas e despesas da versão anterior sem apagar os dados antigos. Não inventa pagamentos ou recebimentos: você deve registrar os já realizados. O limite disponível antigo, que era uma estimativa, não é convertido em um valor informado pelo banco.
+
+Limpar os dados do navegador remove o histórico. Guarde backups fora do navegador. Dados do HTML independente não são transferidos automaticamente para o endereço do site.
 
 ## Desenvolvimento
 
@@ -23,21 +49,15 @@ npm ci
 npm run dev
 ```
 
-## Verificação e compilação
+## Verificação e build
 
 ```sh
 npm test
 npm run build
 ```
 
-A compilação cria `dist/index.html`, seus assets e o arquivo independente `dist/clara.html`. `npm run preview` serve a versão compilada. O servidor de desenvolvimento usa a porta 5173.
+O build cria `dist/index.html`, assets e o arquivo independente `dist/clara.html`. `npm run preview` serve o build. O desenvolvimento usa a porta 5173. Não são necessárias credenciais ou variáveis de ambiente.
 
-## Publicação no GitHub Pages
+## GitHub Pages
 
-O repositório usa a branch `gh-pages`, pasta raiz. O site é servido pelo `index.html` independente nessa branch. Para publicar uma atualização, compile, copie `dist/clara.html` como `index.html` na branch de publicação, mantenha `.nojekyll`, faça commit e push sem substituir alterações remotas. A branch `main` contém o código-fonte. O GitHub executa a publicação após o push; confirme o resultado em Actions.
-
-## Dados e backup
-
-Os dados são armazenados em centavos inteiros no `localStorage` do navegador. Não há servidor de dados, login ou sincronização entre dispositivos. Use **Baixar backup** para exportar um JSON e **Restaurar backup** para importar. A restauração requer confirmação e preserva uma cópia interna dos registros anteriores. Limpar os dados do navegador remove o histórico; guarde backups fora do navegador.
-
-A versão HTML independente pode ser aberta em um computador, mas os dados ficam associados ao navegador e à localização do arquivo. Não são transferidos automaticamente para o endereço do site. Nenhuma credencial ou variável de ambiente é necessária.
+O código-fonte fica em `main`. A publicação usa `gh-pages`, pasta raiz, com `dist/clara.html` copiado para `index.html` e `.nojekyll`. Antes de atualizar, obtenha as mudanças remotas e preserve-as; faça commit e push sem forçar. Confirme a execução de **pages build and deployment** no GitHub antes de afirmar que o site foi atualizado.
