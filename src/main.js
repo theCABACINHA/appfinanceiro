@@ -4,6 +4,10 @@ const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'
 const now = new Date();
 let selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 let page = 'summary';
+const themeKey = 'clara-theme';
+let theme = 'light';
+try { if (localStorage.getItem(themeKey) === 'dark') theme = 'dark'; } catch {}
+document.documentElement.dataset.theme = theme;
 const key = 'clara-budget-v2';
 let state = emptyBudget();
 let blocked = false;
@@ -34,7 +38,7 @@ const names = {summary: 'Meu mês', expenses: 'Despesas', cards: 'Meus cartões'
 function render() {
   const data = month(); const s = summary(data);
   document.querySelector('#app').innerHTML = `
-  <header class="app-header"><a href="#" id="home" class="brand"><span class="logo">c</span>clara<span>.</span></a><span class="header-note">Suas finanças, sem complicação.</span><button class="backup-button" id="export">Baixar backup ↓</button></header>
+  <header class="app-header"><a href="#" id="home" class="brand"><span class="logo">c</span>clara<span>.</span></a><span class="header-note">Suas finanças, sem complicação.</span><button class="theme-button" id="theme-toggle" type="button" aria-pressed="${theme === 'dark'}" aria-label="Tema escuro">${theme === 'dark' ? '☀ Tema claro' : '☾ Tema escuro'}</button><button class="backup-button" id="export">Baixar backup ↓</button></header>
   <main><div class="intro"><div><span class="eyebrow">UM PASSO DE CADA VEZ</span><h1>Seu dinheiro, organizado.</h1><p>Salário, despesas e cartões. Tudo na mesma conta.</p></div><label class="month-label">Mês de referência<input type="month" id="month" value="${selectedMonth}" min="1900-01" max="9999-12"></label></div>
   <nav aria-label="Abas financeiras">${Object.entries(names).map(([id, label]) => `<button data-page="${id}" class="${page === id ? 'active' : ''}" aria-current="${page === id ? 'page' : 'false'}">${label}</button>`).join('')}</nav>
   <div id="notice" class="notice" role="status" hidden></div>
@@ -46,6 +50,14 @@ function render() {
   document.querySelectorAll('[data-page]').forEach(b => b.onclick = () => { page = b.dataset.page; render(); });
   document.querySelector('#month').onchange = e => { if (/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)) { selectedMonth = e.target.value; render(); } };
   document.querySelector('#export').onclick = exportData;
+  document.querySelector('#theme-toggle').onclick = event => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+    event.currentTarget.textContent = theme === 'dark' ? '☀ Tema claro' : '☾ Tema escuro';
+    event.currentTarget.setAttribute('aria-pressed', String(theme === 'dark'));
+    try { localStorage.setItem(themeKey, theme); }
+    catch { notice('Tema alterado. O navegador não permitiu salvar a preferência.', true); }
+  };
   document.querySelector('#import').onclick = () => document.querySelector('#backup-file').click();
   document.querySelector('#backup-file').onchange = importData;
   bindForms();
